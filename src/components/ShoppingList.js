@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ItemForm from "./ItemForm";
 import Filter from "./Filter";
 import Item from "./Item";
@@ -6,6 +6,33 @@ import Item from "./Item";
 function ShoppingList() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [items, setItems] = useState([]);
+
+  useEffect(()=>{
+    fetch("http://localhost:4000/items")
+    .then(response => response.json())
+    .then(itemsData => setItems(itemsData))
+  }, [])
+
+  function handleUpateItem(updatedItem){
+    // console.log(updatedItem)
+    const updatedItems = items.map((item) => {
+      if (item.id === updatedItem.id) {
+        return updatedItem
+      } else {
+        return item;
+      }
+    })
+    setItems(updatedItems)
+  }
+
+  function handleDeleteItem(deletedItem){
+    const remainingItems = items.filter((item) => item.id !== deletedItem.id);
+    setItems(remainingItems)
+  }
+
+  function addNewItem(newItemData){
+    setItems([...items, newItemData])
+  }
 
   function handleCategoryChange(category) {
     setSelectedCategory(category);
@@ -19,14 +46,14 @@ function ShoppingList() {
 
   return (
     <div className="ShoppingList">
-      <ItemForm />
+      <ItemForm addNewItem={addNewItem}/>
       <Filter
         category={selectedCategory}
         onCategoryChange={handleCategoryChange}
       />
       <ul className="Items">
         {itemsToDisplay.map((item) => (
-          <Item key={item.id} item={item} />
+          <Item key={item.id} item={item} onUpdateItem={handleUpateItem} onDeleteItem={handleDeleteItem} />
         ))}
       </ul>
     </div>
